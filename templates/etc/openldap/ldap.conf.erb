@@ -19,14 +19,14 @@ bindpw <%= @bindpw %>
 <% end -%>
 
 <% if @nsswitch == true then -%>
-<% if @nss_map_objectclass != 'false' -%>
+<% if @nss_map_objectclass != false -%>
 <% @nss_map_objectclass.each_pair do |local, remote| -%>
-nss_map_objectclass <%= local -%> <%= remote -%>
+nss_map_objectclass <%= local -%> <%= remote %>
 <%- end -%>
 <%- end -%>
-<% if @nss_map_attribute != 'false' -%>
+<% if @nss_map_attribute != false -%>
 <% @nss_map_attribute.each_pair do |local, remote| -%>
-nss_map_attribute <%= local -%> <%= remote -%>
+nss_map_attribute <%= local -%> <%= remote %>
 <%- end -%>
 <%- end -%>
 nss_base_passwd <%= @nss_passwd %>,<%= @base %>?sub
