@@ -65,6 +65,14 @@
 #    Search base for the shadow database. *base* will be appended.
 #    *Optional* (defaults to false)
 #
+#  [nss_map_objectclass]
+#    Hash with nss objectclass mappings.
+#    *Optional* (defaults to nothing)
+#
+#  [nss_map_attribute]
+#    Hash with nss attributes mappings.
+#    *Optional* (defaults to nothing)
+#
 #  [pam]
 #    If enabled (pam => true) enables pam module, which will
 #    be setup to use pam_ldap, to enable authentication.
@@ -178,10 +186,12 @@ class ldap::client(
   $ssl            = false,
   $ssl_cert       = false,
 
-  $nsswitch   = false,
-  $nss_passwd = false,
-  $nss_group  = false,
-  $nss_shadow = false,
+  $nsswitch            = false,
+  $nss_passwd          = false,
+  $nss_group           = false,
+  $nss_shadow          = false,
+  $nss_map_objectclass = false,
+  $nss_map_attribute   = false,
 
   $pam            = false,
   $pam_att_login  = 'uid',

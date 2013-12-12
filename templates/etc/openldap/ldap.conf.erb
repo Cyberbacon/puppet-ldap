@@ -19,12 +19,16 @@ bindpw <%= @bindpw %>
 <% end -%>
 
 <% if @nsswitch == true then -%>
-# DNs in groups
-#nss_schema         rfc2307bis
-#nss_map_attribute  uniquemember member
-#nss_map_attribute memberuid    member
-#nss_getgrent_skipmembers yes
-
+<% if @nss_map_objectclass != 'false' -%>
+<% @nss_map_objectclass.each_pair do |local, remote| -%>
+nss_map_objectclass <%= local -%> <%= remote -%>
+<%- end -%>
+<%- end -%>
+<% if @nss_map_attribute != 'false' -%>
+<% @nss_map_attribute.each_pair do |local, remote| -%>
+nss_map_attribute <%= local -%> <%= remote -%>
+<%- end -%>
+<%- end -%>
 nss_base_passwd <%= @nss_passwd %>,<%= @base %>?sub
 nss_base_shadow <%= @nss_shadow %>,<%= @base %>?sub
 nss_base_group  <%= @nss_group  %>,<%= @base %>?one
