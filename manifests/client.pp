@@ -239,9 +239,6 @@ class ldap::client(
     require => File[$ldap::params::prefix],
   }
 
-  if($::operatingsystem == 'Ubuntu') {
-    file {
-
   if($ssl) {
 
     if(!$ssl_cert) {
@@ -302,7 +299,7 @@ class ldap::client(
         file { "/etc/ldap.secret" :
           ensure  => $ensure,
           owner   => 'root',
-          group   => 'group',
+          group   => 'root',
           mode    => '0600',
           content => template("ldap/etc/ldap.secret.erb")
         }
