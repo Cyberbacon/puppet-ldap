@@ -239,6 +239,9 @@ class ldap::client(
     require => File[$ldap::params::prefix],
   }
 
+  if($::operatingsystem == 'Ubuntu') {
+    file {
+
   if($ssl) {
 
     if(!$ssl_cert) {
@@ -287,6 +290,24 @@ class ldap::client(
 
   # require module pam
   if($pam == true) {
+    if($::operatingsystem == "Ubuntu") {
+      file { "/etc/ldap.conf" :
+        ensure  => $ensure,
+        owner   => 'root',
+        group   => 'root',
+        mode    => '0644',
+        content => template("ldap/etc/ldap.conf.erb")
+      }
+      if($bindpw != false) {
+        file { "/etc/ldap.secret" :
+          ensure  => $ensure,
+          owner   => 'root',
+          group   => 'group',
+          mode    => '0600',
+          content => template("ldap/etc/ldap.secret.erb")
+        }
+      }
+    }
     Class ['pam::pamd'] -> Class['ldap']
   }
 

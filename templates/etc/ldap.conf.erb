@@ -1,0 +1,53 @@
+###############################################################################
+# << FILE MANAGED BY PUPPET >>
+# Manual changes are likey to be overwritten
+###############################################################################
+
+uri  <%= @uri %>
+base <%= @base %>
+
+ldap_version   <%= @version %>
+timelimit      <%= @timelimit %>
+bind_timelimit <%= @bind_timelimit %>
+idle_timelimit <%= @idle_timelimit %>
+bind_policy    soft
+
+<% if @binddn != false then -%>
+rootbinddn <%= @binddn %>
+<% end -%>
+
+<% if @nsswitch == true then -%>
+<% if @nss_map_objectclass != false -%>
+<% @nss_map_objectclass.each_pair do |local, remote| -%>
+nss_map_objectclass <%= local -%> <%= remote %>
+<%- end -%>
+<%- end -%>
+<% if @nss_map_attribute != false -%>
+<% @nss_map_attribute.each_pair do |local, remote| -%>
+nss_map_attribute <%= local -%> <%= remote %>
+<%- end -%>
+<%- end -%>
+nss_base_passwd <%= @nss_passwd %>,<%= @base %>?sub
+nss_base_shadow <%= @nss_shadow %>,<%= @base %>?sub
+nss_base_group  <%= @nss_group  %>,<%= @base %>?one
+nss_initgroups_ignoreusers root daemon bin sys sync games man lp mail news uucp proxy www-data backup list irc gnats nobody libuuid statd sshd puppet
+
+<% end -%>
+
+<% if @pam == true then -%>
+pam_login_attribute  <%= @pam_att_login %>
+pam_member_attribute <%= @pam_att_member %>
+pam_password         <%= @pam_passwd %>
+pam_filter           <%= @pam_filter %>
+<% end -%>
+
+<% if @ssl == true then -%>
+ssl           start_tls
+tls_reqcert   never
+tls_cacertdir <%= scope.lookupvar('ldap::params::cacertdir') %>
+<% else -%>
+#ssl           start_tls
+#tls_reqcert   never
+#tls_cacertdir <%= scope.lookupvar('ldap::params::cacertdir') %>
+<% end -%>
+
