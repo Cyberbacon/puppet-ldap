@@ -175,8 +175,8 @@
 #
 #
 class ldap::client(
-  $uri,
-  $base,
+  $uri            = 'ldap:///',
+  $base           = 'dc=example,dc=com',
   $version        = '3',
   $timelimit      = 30,
   $bind_timelimit = 30,
@@ -198,6 +198,10 @@ class ldap::client(
   $pam_att_member = 'member',
   $pam_passwd     = 'md5',
   $pam_filter     = 'objectClass=posixAccount',
+  $pam_ldap_conf  = 'USE_DEFAULTS',
+  $pam_ldap_secret = 'USE_DEFAULTS',
+  $libnss_ldap_conf = 'USE_DEFAULTS',
+  $libnss_ldap_secret = 'USE_DEFAULTS',
 
   $sudoers_base   = false,
   $sudoers_filter = false,
@@ -209,23 +213,57 @@ class ldap::client(
 
   require ldap
 
-  if($enable_motd) {
-    motd::register { 'ldap': }
+  #if($enable_motd) {
+  #  motd::register { 'ldap': }
+  #}
+
+  case $::osfamily {
+    'Debian': {
+      $default_pam_ldap_conf         = '/etc/pam_ldap.conf'
+      $default_pam_ldap_secret       = '/etc/pam_ldap.secret'
+      $default_libnss_ldap_conf      = '/etc/libnss-ldap.conf'
+      $default_libnss_ldap_secret    = '/etc/libnss-ldap.secret'
+    }
+  }
+
+
+  if $pam_ldap_conf == 'USE_DEFAULTS' {
+    $pam_ldap_conf_real = $default_pam_ldap_conf
+  } else {
+    $pam_ldap_conf_real = $pam_ldap_conf
+  }
+
+  if $pam_ldap_secret == 'USE_DEFAULTS' {
+    $pam_ldap_secret_real = $default_pam_ldap_secret
+  } else {
+    $pam_ldap_secret_real = $pam_ldap_secret
+  }
+
+  if $libnss_ldap_conf == 'USE_DEFAULTS' {
+    $libnss_ldap_conf_real = $default_libnss_ldap_conf
+  } else {
+    $libnss_ldap_conf_real = $libnss_ldap_conf
+  }
+
+  if $libnss_ldap_secret == 'USE_DEFAULTS' {
+    $libnss_ldap_secret_real = $default_libnss_ldap_secret
+  } else {
+    $libnss_ldap_secret_real = $libnss_ldap_secret
   }
 
   File {
     ensure  => $ensure,
     mode    => '0644',
-    owner   => $ldap::params::owner,
-    group   => $ldap::params::group,
+    owner   => $ldap::owner,
+    group   => $ldap::group,
   }
 
-  file { $ldap::params::prefix:
+  file { $ldap::prefix:
     ensure  => $ensure ? {
                   present => directory,
                   default => absent,
                 },
-    require => Package[$ldap::params::package],
+    require => Package[$ldap::package],
   }
 
   if($sudoers_base) {
@@ -234,9 +272,9 @@ class ldap::client(
     }
   }
 
-  file { "${ldap::params::prefix}/${ldap::params::config}":
-    content => template("ldap/${ldap::params::prefix}/${ldap::params::config}.erb"),
-    require => File[$ldap::params::prefix],
+  file { "${ldap::prefix}/${ldap::config}":
+    content => template("ldap/${ldap::prefix}/${ldap::config}.erb"),
+    require => File[$ldap::prefix],
   }
 
   if($ssl) {
@@ -245,7 +283,7 @@ class ldap::client(
       fail('When ssl is enabled you must define ssl_cert (filename)')
     }
 
-    file { $ldap::params::cacertdir:
+    file { $ldap::cacertdir:
       ensure => $ensure ? {
                   present => directory,
                   default => absent
@@ -255,20 +293,20 @@ class ldap::client(
       mode   => '0755',
     }
 
-    file { "${ldap::params::cacertdir}/${ssl_cert}":
+    file { "${ldap::cacertdir}/${ssl_cert}":
       ensure  => $ensure,
       owner   => 'root',
-      group   => $ldap::params::group,
+      group   => $ldap::group,
       mode    => '0644',
       source  => "puppet:///files/ldap/${ssl_cert}",
-      require => File[$ldap::params::cacertdir],
+      require => File[$ldap::cacertdir],
     }
 
     # Create certificate hash file
     exec { 'Build cert hash':
-      command => "ln -s ${ldap::params::cacertdir}/${ssl_cert} ${ldap::params::cacertdir}/$(openssl x509 -noout -hash -in ${ldap::params::cacertdir}/${ssl_cert}).0",
-      unless  => "test -f ${ldap::params::cacertdir}/$(openssl x509 -noout -hash -in ${ldap::params::cacertdir}/${ssl_cert}).0",
-      require => File["${ldap::params::cacertdir}/${ssl_cert}"],
+      command => "ln -s ${ldap::cacertdir}/${ssl_cert} ${ldap::cacertdir}/$(openssl x509 -noout -hash -in ${ldap::cacertdir}/${ssl_cert}).0",
+      unless  => "test -f ${ldap::cacertdir}/$(openssl x509 -noout -hash -in ${ldap::cacertdir}/${ssl_cert}).0",
+      require => File["${ldap::cacertdir}/${ssl_cert}"],
       path    => [ "/bin", "/usr/bin", "/sbin", "/usr/sbin" ]
     }
   }
@@ -287,8 +325,15 @@ class ldap::client(
 
   # require module pam
   if($pam == true) {
-    if($::operatingsystem == "Ubuntu") {
-      file { "/etc/ldap.conf" :
+    if($::osfamily == "Debian") {
+      file { $pam_ldap_conf_real :
+        ensure  => $ensure,
+        owner   => 'root',
+        group   => 'root',
+        mode    => '0644',
+        content => template("ldap/etc/ldap.conf.erb")
+      }
+      file { $libnss_ldap_conf_real :
         ensure  => $ensure,
         owner   => 'root',
         group   => 'root',
@@ -296,7 +341,14 @@ class ldap::client(
         content => template("ldap/etc/ldap.conf.erb")
       }
       if($bindpw != false) {
-        file { "/etc/ldap.secret" :
+        file { $pam_ldap_secret_real :
+          ensure  => $ensure,
+          owner   => 'root',
+          group   => 'root',
+          mode    => '0600',
+          content => template("ldap/etc/ldap.secret.erb")
+        }
+        file { $libnss_ldap_secret_real :
           ensure  => $ensure,
           owner   => 'root',
           group   => 'root',
@@ -305,7 +357,6 @@ class ldap::client(
         }
       }
     }
-    Class ['pam::pamd'] -> Class['ldap']
   }
 
 }

@@ -37,12 +37,28 @@
 # Copyleft (C) 2012 Emiliano Castagnari ecastag@gmail.com (a.k.a. Torian)
 #
 #
-class ldap($ensure = present) {
+class ldap(
+  $ensure      = present,
+  $package     = 'ldap-utils',
+  $prefix      = '/etc/ldap',
+  $owner       = 'root',
+  $group       = 'root',
+  $config      = 'ldap.conf',
+  $cacertdir   = '/etc/ssl/certs',
+  $service     = 'slapd',
+  $server_pattern  = 'slapd',
+  $server_package  = [ 'slapd' ],
+  $server_config   = 'slapd.conf',
+  $server_owner    = 'openldap',
+  $server_group    = 'openldap',
+  $db_prefix   = '/var/lib/ldap',
+  $ssl_prefix  = '/etc/ssl/certs',
+  $server_run  = '/var/run/slapd',
+) {
 
     include stdlib
-    include ldap::params
 
-    package { $ldap::params::package :
+    package { $package :
       ensure => $ensure,
     }
 

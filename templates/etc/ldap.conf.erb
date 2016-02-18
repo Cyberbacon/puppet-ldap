@@ -44,10 +44,10 @@ pam_filter           <%= @pam_filter %>
 <% if @ssl == true then -%>
 ssl           start_tls
 tls_reqcert   never
-tls_cacertdir <%= scope.lookupvar('ldap::params::cacertdir') %>
+tls_cacertdir <%= scope.lookupvar('ldap::cacertdir') %>
 <% else -%>
 #ssl           start_tls
 #tls_reqcert   never
-#tls_cacertdir <%= scope.lookupvar('ldap::params::cacertdir') %>
+#tls_cacertdir <%= scope.lookupvar('ldap::cacertdir') %>
 <% end -%>
 
