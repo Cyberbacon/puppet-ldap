@@ -200,8 +200,10 @@ class ldap::client(
   $pam_filter     = 'objectClass=posixAccount',
   $pam_ldap_conf  = 'USE_DEFAULTS',
   $pam_ldap_secret = 'USE_DEFAULTS',
+  $libpam_ldap_package = 'USE_DEFAULTS',
   $libnss_ldap_conf = 'USE_DEFAULTS',
   $libnss_ldap_secret = 'USE_DEFAULTS',
+  $libnss_ldap_package = 'USE_DEFAULTS',
 
   $sudoers_base   = false,
   $sudoers_filter = false,
@@ -221,8 +223,10 @@ class ldap::client(
     'Debian': {
       $default_pam_ldap_conf         = '/etc/pam_ldap.conf'
       $default_pam_ldap_secret       = '/etc/pam_ldap.secret'
+      $default_libpam_ldap_package   = 'libpam-ldap'
       $default_libnss_ldap_conf      = '/etc/libnss-ldap.conf'
       $default_libnss_ldap_secret    = '/etc/libnss-ldap.secret'
+      $default_libnss_ldap_package   = 'libnss-ldap'
     }
   }
 
@@ -239,6 +243,12 @@ class ldap::client(
     $pam_ldap_secret_real = $pam_ldap_secret
   }
 
+  if $libpam_ldap_package == 'USE_DEFAULTS' {
+    $libpam_ldap_package_real = $default_libpam_ldap_package
+  } else {
+    $libpam_ldap_package_real = $libpam_ldap_package
+  }
+
   if $libnss_ldap_conf == 'USE_DEFAULTS' {
     $libnss_ldap_conf_real = $default_libnss_ldap_conf
   } else {
@@ -249,6 +259,12 @@ class ldap::client(
     $libnss_ldap_secret_real = $default_libnss_ldap_secret
   } else {
     $libnss_ldap_secret_real = $libnss_ldap_secret
+  }
+
+  if $libnss_ldap_package == 'USE_DEFAULTS' {
+    $libnss_ldap_package_real = $default_libnss_ldap_package
+  } else {
+    $libnss_ldap_package_real = $libnss_ldap_package
   }
 
   File {
@@ -325,6 +341,14 @@ class ldap::client(
 
   # require module pam
   if($pam == true) {
+
+    package { $libpam_ldap_package_real :
+      ensure => present,
+    }
+    package { $libnss_ldap_package_real :
+      ensure => present,
+    }
+
     if($::osfamily == "Debian") {
       file { $pam_ldap_conf_real :
         ensure  => $ensure,
