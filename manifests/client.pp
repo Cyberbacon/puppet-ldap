@@ -47,12 +47,6 @@
 #    be located under puppet:///files/ldap/
 #    *Optional* (defaults to false)
 #
-#  [nsswitch]
-#    If enabled (nsswitch => true) enables nsswitch to use
-#    ldap as a backend for password, group and shadow databases.
-#    *Requires*: https://github.com/torian/puppet-nsswitch.git (in alpha)
-#    *Optional* (defaults to false)
-#
 #  [nss_passwd]
 #    Search base for the passwd database. *base* will be appended.
 #    *Optional* (defaults to false)
@@ -155,7 +149,6 @@
 #  ssl        => true,
 #  ssl_cert => 'ldapserver00.pem'
 #
-#  nsswitch   => true,
 #  nss_passwd => 'ou=users',
 #  nss_shadow => 'ou=users',
 #  nss_group  => 'ou=groups',
@@ -186,7 +179,6 @@ class ldap::client(
   $ssl            = false,
   $ssl_cert       = false,
 
-  $nsswitch            = false,
   $nss_passwd          = false,
   $nss_group           = false,
   $nss_shadow          = false,
@@ -327,17 +319,6 @@ class ldap::client(
     }
   }
 
-  # require module nsswitch
-  if($nsswitch == true) {
-    class { 'nsswitch':
-      uri         => $uri,
-      base        => $base,
-      module_type => $ensure ? {
-                        'present' => 'ldap',
-                        default   => 'none'
-                      },
-    }
-  }
 
   # require module pam
   if($pam == true) {
