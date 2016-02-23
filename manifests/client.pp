@@ -47,18 +47,6 @@
 #    be located under puppet:///files/ldap/
 #    *Optional* (defaults to false)
 #
-#  [nss_passwd]
-#    Search base for the passwd database. *base* will be appended.
-#    *Optional* (defaults to false)
-#
-#  [nss_group]
-#    Search base for the group database. *base* will be appended.
-#    *Optional* (defaults to false)
-#
-#  [nss_shadow]
-#    Search base for the shadow database. *base* will be appended.
-#    *Optional* (defaults to false)
-#
 #  [nss_map_objectclass]
 #    Hash with nss objectclass mappings.
 #    *Optional* (defaults to nothing)
@@ -149,10 +137,6 @@
 #  ssl        => true,
 #  ssl_cert => 'ldapserver00.pem'
 #
-#  nss_passwd => 'ou=users',
-#  nss_shadow => 'ou=users',
-#  nss_group  => 'ou=groups',
-#
 #  pam        => true,
 # }
 #
@@ -179,9 +163,9 @@ class ldap::client(
   $ssl            = false,
   $ssl_cert       = false,
 
-  $nss_passwd          = false,
-  $nss_group           = false,
-  $nss_shadow          = false,
+  $nss_passwd_filter          = 'objectClass=posixAccount',
+  $nss_group_filter           = 'objectClass=posixGroup',
+  $nss_shadow_filter          = 'objectClass=posixAccount',
   $nss_map_objectclass = false,
   $nss_map_attribute   = false,
 

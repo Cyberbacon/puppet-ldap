@@ -16,7 +16,6 @@ bind_policy    soft
 rootbinddn <%= @binddn %>
 <% end -%>
 
-<% if @nsswitch == true then -%>
 <% if @nss_map_objectclass != false -%>
 <% @nss_map_objectclass.each_pair do |local, remote| -%>
 nss_map_objectclass <%= local -%> <%= remote %>
@@ -27,12 +26,11 @@ nss_map_objectclass <%= local -%> <%= remote %>
 nss_map_attribute <%= local -%> <%= remote %>
 <%- end -%>
 <%- end -%>
-nss_base_passwd <%= @nss_passwd %>,<%= @base %>?sub
-nss_base_shadow <%= @nss_shadow %>,<%= @base %>?sub
-nss_base_group  <%= @nss_group  %>,<%= @base %>?one
-nss_initgroups_ignoreusers root daemon bin sys sync games man lp mail news uucp proxy www-data backup list irc gnats nobody libuuid statd sshd puppet
+nss_base_passwd <%= @base %>?sub?<%= @nss_passwd_filter %>
+nss_base_shadow <%= @base %>?sub?<%= @nss_shadow_filter %>
+nss_base_group  <%= @base %>?sub?<%= @nss_group_filter %>
 
-<% end -%>
+nss_initgroups_ignoreusers root daemon bin sys sync games man lp mail news uucp proxy www-data backup list irc gnats nobody libuuid statd sshd puppet
 
 <% if @pam == true then -%>
 pam_login_attribute  <%= @pam_att_login %>
